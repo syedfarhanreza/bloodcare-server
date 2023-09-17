@@ -23,7 +23,22 @@ async function run(){
         const requestsCollection = client.db('BloodCare').collection('requests');
         const usersCollection = client.db('BloodCare').collection('users');
 
-    
+        function verifyJWT(req, res, next){
+             console.log('token inside VerifyJWT', req.headers.authorization);
+             const authHeader = req.headers.authorization;
+             if(!authHeader){
+                return res.status(401).send('unauthorized access');
+             }
+             const token = authHeader.split(' ')[1];
+
+             jwt.verify(token, process.env.ACCESS_TOKEN, function(err, decoded){
+                if(err){
+                    return res.status(403).send({message: 'forbidden access'})
+                }
+                req.decoded = decoded;
+                next();
+             })
+        }
 
         app.get('/bloodGroups', async(req, res) => {
             const date = req.query.date;
@@ -32,9 +47,12 @@ async function run(){
             res.send(options);
         });
 
-        app.get('/requests', async(req, res) => {
+        app.get('/requests', verifyJWT, async(req, res) => {
             const email = req.query.email;
-            console.log('token', req.headers.authorization);
+            const decodedEmail = req.decoded.email;
+            if(email !== decodedEmail){
+                return res.status(403).send({message: 'forbidden access'});
+            }
             const query = {email: email};
             const requests = await requestsCollection.find(query).toArray();
             res.send(requests);
@@ -57,6 +75,11 @@ async function run(){
             res.status(403).send({accessToken: ''})
         })
         
+        app.get('/users', async(req, res) =>{
+            const query = {};
+            const users = await usersCollection.find(query).toArray();
+            res.send(users);
+        })
 
         app.post('/users', async(req, res) => {
            const user = req.body;
