@@ -22,6 +22,7 @@ async function run() {
         const bloodGroupCollection = client.db('BloodCare').collection('bloodGroups');
         const requestsCollection = client.db('BloodCare').collection('requests');
         const usersCollection = client.db('BloodCare').collection('users');
+        const hospitalsCollection = client.db('BloodCare').collection('hospitals');
 
         function verifyJWT(req, res, next) {
             console.log('token inside VerifyJWT', req.headers.authorization);
@@ -69,7 +70,7 @@ async function run() {
             const query = { email: email };
             const user = await usersCollection.findOne(query);
             if (user) {
-                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1h' })
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '16h' })
                 return res.send({ accessToken: token });
             }
             res.status(403).send({ accessToken: '' })
@@ -112,7 +113,14 @@ async function run() {
             }
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
+        });
+
+        app.post('/hospitals', async(req, res) => {
+            const hospital = req.body;
+            const result = await hospitalsCollection.insertOne(hospital);
+            res.send(result);
         })
+
     }
     finally {
 
