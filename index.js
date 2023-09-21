@@ -115,6 +115,12 @@ async function run() {
             res.send(result);
         });
 
+        app.get('/hospitals', async(req, res) => {
+            const query = {};
+            const hospitals = await hospitalsCollection.find(query).toArray();
+            res.send(hospitals);
+        })
+
         app.post('/hospitals', async(req, res) => {
             const hospital = req.body;
             const result = await hospitalsCollection.insertOne(hospital);
