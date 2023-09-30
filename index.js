@@ -70,7 +70,7 @@ async function run() {
             const query = { email: email };
             const user = await usersCollection.findOne(query);
             if (user) {
-                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '16h' })
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN)
                 return res.send({ accessToken: token });
             }
             res.status(403).send({ accessToken: '' })
@@ -115,15 +115,21 @@ async function run() {
             res.send(result);
         });
 
-        app.get('/hospitals', async(req, res) => {
+        app.get('/hospitals', verifyJWT, async(req, res) => {
             const query = {};
             const hospitals = await hospitalsCollection.find(query).toArray();
             res.send(hospitals);
-        })
+        });
 
-        app.post('/hospitals', async(req, res) => {
+        app.post('/hospitals',verifyJWT, async(req, res) => {
             const hospital = req.body;
             const result = await hospitalsCollection.insertOne(hospital);
+            res.send(result);
+        });
+        app.delete('/hospitals/:id', verifyJWT, async(req, res) => {
+            const id = req.params.id;
+            const filter = {_id: new ObjectId(id)};
+            const result = await hospitalsCollection.deleteOne(filter);
             res.send(result);
         })
 
