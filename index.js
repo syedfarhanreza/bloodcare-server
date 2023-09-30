@@ -17,6 +17,23 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, { serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true, } });
 
+function verifyJWT(req, res, next) {
+    console.log('token inside VerifyJWT', req.headers.authorization);
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send('unauthorized access');
+    }
+    const token = authHeader.split(' ')[1];
+
+    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: 'forbidden access' })
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
+
 async function run() {
     try {
         const bloodGroupCollection = client.db('BloodCare').collection('bloodGroups');
@@ -24,22 +41,19 @@ async function run() {
         const usersCollection = client.db('BloodCare').collection('users');
         const hospitalsCollection = client.db('BloodCare').collection('hospitals');
 
-        function verifyJWT(req, res, next) {
-            console.log('token inside VerifyJWT', req.headers.authorization);
-            const authHeader = req.headers.authorization;
-            if (!authHeader) {
-                return res.status(401).send('unauthorized access');
-            }
-            const token = authHeader.split(' ')[1];
+        // make sure you use verifyAdmin after verifyJwt
+        const verifyAdmin = async (req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail };
+            const user = await usersCollection.findOne(query);
 
-            jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
-                if (err) {
-                    return res.status(403).send({ message: 'forbidden access' })
-                }
-                req.decoded = decoded;
-                next();
-            })
+            if (user?.role !== 'admin') {
+                return res.status(403).send({ message: 'Forbidden access' })
+            }
+            next();
         }
+
+       
 
         app.get('/bloodGroups', async (req, res) => {
             const date = req.query.date;
@@ -94,15 +108,7 @@ async function run() {
             const result = await usersCollection.insertOne(user);
             res.send(result);
         });
-        app.put('/users/admin/:id', verifyJWT, async (req, res) => {
-            const decodedEmail = req.decoded.email;
-            const query = { email: decodedEmail };
-            const user = await usersCollection.findOne(query);
-
-            if (user?.role !== 'admin') {
-                return res.status(403).send({ message: 'Forbidden access' })
-            }
-
+        app.put('/users/admin/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const userId = req.params.id;
             const filter = { _id: new ObjectId(userId) }
             const options = { upsert: true };
@@ -115,18 +121,18 @@ async function run() {
             res.send(result);
         });
 
-        app.get('/hospitals', verifyJWT, async(req, res) => {
+        app.get('/hospitals', verifyJWT, verifyAdmin, async(req, res) => {
             const query = {};
             const hospitals = await hospitalsCollection.find(query).toArray();
             res.send(hospitals);
         });
 
-        app.post('/hospitals',verifyJWT, async(req, res) => {
+        app.post('/hospitals',verifyJWT, verifyAdmin, async(req, res) => {
             const hospital = req.body;
             const result = await hospitalsCollection.insertOne(hospital);
             res.send(result);
         });
-        app.delete('/hospitals/:id', verifyJWT, async(req, res) => {
+        app.delete('/hospitals/:id', verifyJWT, verifyAdmin, async(req, res) => {
             const id = req.params.id;
             const filter = {_id: new ObjectId(id)};
             const result = await hospitalsCollection.deleteOne(filter);
