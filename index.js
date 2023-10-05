@@ -18,7 +18,7 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri, { serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true, } });
 
 function verifyJWT(req, res, next) {
-    console.log('token inside VerifyJWT', req.headers.authorization);
+    // console.log('token inside VerifyJWT', req.headers.authorization);
     const authHeader = req.headers.authorization;
     if (!authHeader) {
         return res.status(401).send('unauthorized access');
@@ -40,6 +40,7 @@ async function run() {
         const requestsCollection = client.db('BloodCare').collection('requests');
         const usersCollection = client.db('BloodCare').collection('users');
         const hospitalsCollection = client.db('BloodCare').collection('hospitals');
+        const blogsCollection = client.db('BloodCare').collection('blogs');
 
         // make sure you use verifyAdmin after verifyJwt
         const verifyAdmin = async (req, res, next) => {
@@ -137,7 +138,12 @@ async function run() {
             const filter = {_id: new ObjectId(id)};
             const result = await hospitalsCollection.deleteOne(filter);
             res.send(result);
-        })
+        });
+        app.post('/blogs',verifyJWT, verifyAdmin, async(req, res) => {
+            const blog = req.body;
+            const result = await blogsCollection.insertOne(blog);
+            res.send(result);
+        });
 
     }
     finally {
