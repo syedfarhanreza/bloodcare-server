@@ -121,6 +121,12 @@ async function run() {
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         });
+        app.delete('/users/:id', verifyJWT, verifyAdmin, async(req, res) => {
+            const id = req.params.id;
+            const filter = {_id: new ObjectId(id)};
+            const result = await usersCollection.deleteOne(filter);
+            res.send(result);
+        });
 
         app.get('/hospitals', verifyJWT, verifyAdmin, async(req, res) => {
             const query = {};
@@ -138,6 +144,11 @@ async function run() {
             const filter = {_id: new ObjectId(id)};
             const result = await hospitalsCollection.deleteOne(filter);
             res.send(result);
+        });
+        app.get('/blogs', verifyJWT, verifyAdmin, async(req, res) => {
+            const query = {};
+            const blogs = await blogsCollection.find(query).toArray();
+            res.send(blogs);
         });
         app.post('/blogs',verifyJWT, verifyAdmin, async(req, res) => {
             const blog = req.body;
