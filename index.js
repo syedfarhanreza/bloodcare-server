@@ -110,8 +110,8 @@ async function run() {
             res.send(result);
         });
         app.put('/users/admin/:id', verifyJWT, verifyAdmin, async (req, res) => {
-            const userId = req.params.id;
-            const filter = { _id: new ObjectId(userId) }
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
             const options = { upsert: true };
             const updatedDoc = {
                 $set: {
@@ -155,6 +155,13 @@ async function run() {
             const result = await blogsCollection.insertOne(blog);
             res.send(result);
         });
+        app.delete('/blogs/:id', verifyJWT, verifyAdmin, async(req, res) => {
+            const id = req.params.id;
+            const filter = {_id: new ObjectId(id)};
+            const result = await blogsCollection.deleteOne(filter);
+            res.send(result);
+        });
+
 
     }
     finally {
