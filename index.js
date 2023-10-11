@@ -121,6 +121,18 @@ async function run() {
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         });
+        app.put('/users/both/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    role: 'both'
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        });
         app.delete('/users/:id', verifyJWT, verifyAdmin, async(req, res) => {
             const id = req.params.id;
             const filter = {_id: new ObjectId(id)};
