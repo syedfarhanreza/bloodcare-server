@@ -41,6 +41,7 @@ async function run() {
         const usersCollection = client.db('BloodCare').collection('users');
         const hospitalsCollection = client.db('BloodCare').collection('hospitals');
         const blogsCollection = client.db('BloodCare').collection('blogs');
+        const campaignsCollection = client.db('BloodCare').collection('campaigns');
 
         // make sure you use verifyAdmin after verifyJwt
         const verifyAdmin = async (req, res, next) => {
@@ -54,7 +55,7 @@ async function run() {
             next();
         }
 
-       
+
 
         app.get('/bloodGroups', async (req, res) => {
             const date = req.query.date;
@@ -133,48 +134,51 @@ async function run() {
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         });
-        app.delete('/users/:id', verifyJWT, verifyAdmin, async(req, res) => {
+        app.delete('/users/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
-            const filter = {_id: new ObjectId(id)};
+            const filter = { _id: new ObjectId(id) };
             const result = await usersCollection.deleteOne(filter);
             res.send(result);
         });
 
-        app.get('/hospitals', verifyJWT, verifyAdmin, async(req, res) => {
+        app.get('/hospitals', verifyJWT, verifyAdmin, async (req, res) => {
             const query = {};
             const hospitals = await hospitalsCollection.find(query).toArray();
             res.send(hospitals);
         });
 
-        app.post('/hospitals',verifyJWT, verifyAdmin, async(req, res) => {
+        app.post('/hospitals', verifyJWT, verifyAdmin, async (req, res) => {
             const hospital = req.body;
             const result = await hospitalsCollection.insertOne(hospital);
             res.send(result);
         });
-        app.delete('/hospitals/:id', verifyJWT, verifyAdmin, async(req, res) => {
+        app.delete('/hospitals/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
-            const filter = {_id: new ObjectId(id)};
+            const filter = { _id: new ObjectId(id) };
             const result = await hospitalsCollection.deleteOne(filter);
             res.send(result);
         });
-        app.get('/blogs', verifyJWT, verifyAdmin, async(req, res) => {
+        app.get('/blogs', verifyJWT, verifyAdmin, async (req, res) => {
             const query = {};
             const blogs = await blogsCollection.find(query).toArray();
             res.send(blogs);
         });
-        app.post('/blogs',verifyJWT, verifyAdmin, async(req, res) => {
+        app.post('/blogs', verifyJWT, verifyAdmin, async (req, res) => {
             const blog = req.body;
             const result = await blogsCollection.insertOne(blog);
             res.send(result);
         });
-        app.delete('/blogs/:id', verifyJWT, verifyAdmin, async(req, res) => {
+        app.delete('/blogs/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
-            const filter = {_id: new ObjectId(id)};
+            const filter = { _id: new ObjectId(id) };
             const result = await blogsCollection.deleteOne(filter);
             res.send(result);
         });
-
-
+        app.post('/campaigns', verifyJWT, verifyAdmin, async (req, res) => {
+            const campaigns = req.body;
+            const result = await campaignsCollection.insertOne(campaigns);
+            res.send(result);
+        });
     }
     finally {
 
