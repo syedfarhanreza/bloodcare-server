@@ -174,6 +174,11 @@ async function run() {
             const result = await blogsCollection.deleteOne(filter);
             res.send(result);
         });
+        app.get('/campaigns', verifyJWT, verifyAdmin, async (req, res) => {
+            const query = {};
+            const campaigns = await campaignsCollection.find(query).toArray();
+            res.send(campaigns);
+        });
         app.post('/campaigns', verifyJWT, verifyAdmin, async (req, res) => {
             const campaigns = req.body;
             const result = await campaignsCollection.insertOne(campaigns);
