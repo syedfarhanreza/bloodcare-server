@@ -184,6 +184,12 @@ async function run() {
             const result = await campaignsCollection.insertOne(campaigns);
             res.send(result);
         });
+        app.delete('/campaigns/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const result = await campaignsCollection.deleteOne(filter);
+            res.send(result);
+        });
     }
     finally {
 
