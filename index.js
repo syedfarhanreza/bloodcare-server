@@ -42,6 +42,14 @@ async function run() {
         const hospitalsCollection = client.db('BloodCare').collection('hospitals');
         const blogsCollection = client.db('BloodCare').collection('blogs');
         const campaignsCollection = client.db('BloodCare').collection('campaigns');
+        const commentsCollection = client.db('BloodCare').collection('comments');
+        const reactionsCollection = client.db('BloodCare').collection('reactions');
+
+        // console.log('Creating collections...');
+        // await commentsCollection.createIndex({ blogId: 1 });
+        // await reactionsCollection.createIndex({ blogId: 1 });
+        // console.log('Collections created successfully.');
+
 
         // make sure you use verifyAdmin after verifyJwt
         const verifyAdmin = async (req, res, next) => {
@@ -141,7 +149,7 @@ async function run() {
             res.send(result);
         });
 
-        app.get('/hospitals', verifyJWT, verifyAdmin, async (req, res) => {
+        app.get('/hospitals', async (req, res) => {
             const query = {};
             const hospitals = await hospitalsCollection.find(query).toArray();
             res.send(hospitals);
@@ -158,7 +166,12 @@ async function run() {
             const result = await hospitalsCollection.deleteOne(filter);
             res.send(result);
         });
-        app.get('/blogs', verifyJWT, verifyAdmin, async (req, res) => {
+        app.get('/hospitalName', async(req, res) => {
+            const query = {}
+            const result = await hospitalsCollection.find(query).project({name: 1}).toArray();
+            res.send(result);
+        })
+        app.get('/blogs', async (req, res) => {
             const query = {};
             const blogs = await blogsCollection.find(query).toArray();
             res.send(blogs);
@@ -168,13 +181,14 @@ async function run() {
             const result = await blogsCollection.insertOne(blog);
             res.send(result);
         });
+
         app.delete('/blogs/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const result = await blogsCollection.deleteOne(filter);
             res.send(result);
         });
-        app.get('/campaigns', verifyJWT, verifyAdmin, async (req, res) => {
+        app.get('/campaigns', async (req, res) => {
             const query = {};
             const campaigns = await campaignsCollection.find(query).toArray();
             res.send(campaigns);
@@ -190,6 +204,9 @@ async function run() {
             const result = await campaignsCollection.deleteOne(filter);
             res.send(result);
         });
+    }
+    catch (error) {
+        console.error('Error during collection creation:', error);
     }
     finally {
 
