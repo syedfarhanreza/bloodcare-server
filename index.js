@@ -42,8 +42,6 @@ async function run() {
         const hospitalsCollection = client.db('BloodCare').collection('hospitals');
         const blogsCollection = client.db('BloodCare').collection('blogs');
         const campaignsCollection = client.db('BloodCare').collection('campaigns');
-        const commentsCollection = client.db('BloodCare').collection('comments');
-        const reactionsCollection = client.db('BloodCare').collection('reactions');
 
         // console.log('Creating collections...');
         // await commentsCollection.createIndex({ blogId: 1 });
