@@ -69,7 +69,7 @@ async function run() {
             const options = await bloodGroupCollection.find(query).toArray();
             res.send(options);
         });
-
+       
         app.get('/requests', verifyJWT, async (req, res) => {
             const email = req.query.email;
             const decodedEmail = req.decoded.email;
@@ -84,6 +84,12 @@ async function run() {
         app.post('/requests', async (req, res) => {
             const request = req.body;
             const result = await requestsCollection.insertOne(request);
+            res.send(result);
+        });
+        app.delete('/requests/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const result = await requestsCollection.deleteOne(filter);
             res.send(result);
         });
 
@@ -164,9 +170,9 @@ async function run() {
             const result = await hospitalsCollection.deleteOne(filter);
             res.send(result);
         });
-        app.get('/hospitalName', async(req, res) => {
+        app.get('/hospitalName', async (req, res) => {
             const query = {}
-            const result = await hospitalsCollection.find(query).project({name: 1}).toArray();
+            const result = await hospitalsCollection.find(query).project({ name: 1 }).toArray();
             res.send(result);
         })
         app.get('/blogs', async (req, res) => {
