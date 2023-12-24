@@ -69,7 +69,12 @@ async function run() {
             const options = await bloodGroupCollection.find(query).toArray();
             res.send(options);
         });
-       
+        app.get('/donorRequests', async (req, res) => {
+            const query = {};
+            const donorRequests = await requestsCollection.find(query).toArray();
+            res.send(donorRequests);
+        })
+
         app.get('/requests', verifyJWT, async (req, res) => {
             const email = req.query.email;
             const decodedEmail = req.decoded.email;
@@ -80,6 +85,7 @@ async function run() {
             const requests = await requestsCollection.find(query).toArray();
             res.send(requests);
         })
+
 
         app.post('/requests', async (req, res) => {
             const request = req.body;
@@ -109,12 +115,24 @@ async function run() {
             const users = await usersCollection.find(query).toArray();
             res.send(users);
         })
+        app.get('/users/:uid', async (req, res) => {
+            const uid = req.params.uid;
+            const query = { uid }
+            const user = await usersCollection.findOne(query);
+            res.send(user);
+        })
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email }
             const user = await usersCollection.findOne(query);
             res.send({ isAdmin: user?.role === 'admin' });
         })
+        app.get('/users', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const users = await usersCollection.find(query).toArray();
+            res.send(users);
+        });
 
         app.post('/users', async (req, res) => {
             const user = req.body;
