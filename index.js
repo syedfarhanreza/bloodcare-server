@@ -115,12 +115,28 @@ async function run() {
             const users = await usersCollection.find(query).toArray();
             res.send(users);
         })
-        app.get('/users/:uid', async (req, res) => {
+        app.get('/users/profile/:uid', async (req, res) => {
             const uid = req.params.uid;
             const query = { uid }
             const user = await usersCollection.findOne(query);
             res.send(user);
-        })
+        });
+        app.put('/users/profile/:id', async (req, res) => {
+            const userId = req.params.id;
+            const bodyData = req.body;
+
+            const user = await usersCollection.updateOne(
+                { _id: new ObjectId(userId) },
+                {
+                    $set: { ...bodyData }
+                },
+                { upsert: true }
+            )
+
+            res.send({ message: 'updated', user})
+        });
+
+
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email }
